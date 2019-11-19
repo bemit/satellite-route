@@ -1,0 +1,23 @@
+{
+  "name": "orbiter/satellite-route",
+  "license": "MIT",
+  "description": "",
+  "require": {
+    "php": ">=7.2",
+    "orbiter/satellite": "*",
+    "psr/http-server-middleware": "^1.0",
+    "psr/http-server-handler": "^1.0",
+    "psr/http-message": "^1.0",
+    "nikic/fast-route": "^1.3.0",
+    "nyholm/psr7": "^1.2",
+    "nyholm/psr7-server": "^0.4.1",
+    "middlewares/fast-route": "^1.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "Satellite\\KernelRoute\\": "src"
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}
