@@ -5,6 +5,8 @@ namespace Satellite\KernelRoute;
 use FastRoute;
 use Satellite\Event;
 use Satellite\SystemLaunchEvent;
+use Nyholm\Psr7\Factory\Psr17Factory;
+use Nyholm\Psr7Server\ServerRequestCreator;
 
 class Router {
     /**
@@ -39,11 +41,11 @@ class Router {
      * @param $id
      * @param $method
      * @param $route
-     * @param $handler
+     * @param callable $handler callable or DI resolvable
      *
      * @return self
      */
-    public static function addRoute($id, $method, $route, $handler) {
+    public static function addRoute(string $id, string $method, string $route, $handler) {
         static::$routes[$id] = static::buildRouteData($method, $route, $handler);
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
@@ -66,27 +68,69 @@ class Router {
         ];
     }
 
-    public static function addGroup($id, $prefix, $handler) {
+    /**
+     * @param string $id
+     * @param string $prefix
+     * @param array $routes
+     */
+    public static function addGroup(string $id, string $prefix, array $routes) {
         static::$route_groups[$id] = [
             'prefix' => $prefix,
-            'handler' => $handler,
+            'routes' => $routes,
         ];
     }
 
-    public static function delete($route, $handler) {
+    /**
+     * @param string $route
+     * @param callable $handler callable or DI resolvable
+     *
+     * @return array
+     */
+    public static function delete(string $route, $handler) {
         return static::buildRouteData('DELETE', $route, $handler);
     }
 
-    public static function put($route, $handler) {
+    /**
+     * @param string $route
+     * @param callable $handler callable or DI resolvable
+     *
+     * @return array
+     */
+    public static function put(string $route, $handler) {
         return static::buildRouteData('PUT', $route, $handler);
     }
 
-    public static function post($route, $handler) {
+    /**
+     * @param string $route
+     * @param callable $handler callable or DI resolvable
+     *
+     * @return array
+     */
+    public static function post(string $route, $handler) {
         return static::buildRouteData('POST', $route, $handler);
     }
 
-    public static function get($route, $handler) {
+    /**
+     * @param string $route
+     * @param callable $handler callable or DI resolvable
+     *
+     * @return array
+     */
+    public static function get(string $route, $handler) {
         return static::buildRouteData('GET', $route, $handler);
+    }
+
+    /**
+     * @param string $prefix
+     * @param array $routes
+     *
+     * @return array
+     */
+    public static function group(string $prefix, array $routes) {
+        return [
+            'prefix' => $prefix,
+            'routes' => $routes,
+        ];
     }
 
     /**
@@ -106,7 +150,7 @@ class Router {
 
     protected static function buildRouteGroup($route_group, FastRoute\RouteCollector $r) {
         $r->addGroup($route_group['prefix'], static function(FastRoute\RouteCollector $re) use ($route_group) {
-            foreach($route_group['handler'] as $id => $route) {
+            foreach($route_group['routes'] as $id => $route) {
                 if(isset($route['method'])) {
                     // route
                     $re->addRoute(...static::destructRouteData($route));
@@ -122,9 +166,9 @@ class Router {
      * @return \Psr\Http\Message\ServerRequestInterface
      */
     protected static function createContext() {
-        $psr17Factory = new \Nyholm\Psr7\Factory\Psr17Factory();
+        $psr17Factory = new Psr17Factory();
 
-        $creator = new \Nyholm\Psr7Server\ServerRequestCreator(
+        $creator = new ServerRequestCreator(
             $psr17Factory, // ServerRequestFactory
             $psr17Factory, // UriFactory
             $psr17Factory, // UploadedFileFactory
