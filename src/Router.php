@@ -19,6 +19,11 @@ class Router {
     protected static $route_groups;
 
     /**
+     * @var string|null
+     */
+    protected static $cache;
+
+    /**
      * @param \Satellite\SystemLaunchEvent $exec
      *
      * @return \Satellite\SystemLaunchEvent
@@ -35,6 +40,10 @@ class Router {
         Event::dispatch($response);
 
         return $exec;
+    }
+
+    public static function setCache($cache) {
+        static::$cache = $cache;
     }
 
     /**
@@ -137,7 +146,7 @@ class Router {
      * @return \FastRoute\Dispatcher
      */
     protected static function buildRouter() {
-        return FastRoute\simpleDispatcher(static function(FastRoute\RouteCollector $r) {
+        $collection = static function(FastRoute\RouteCollector $r) {
             foreach(static::$routes as $id => $route) {
                 $r->addRoute(...static::destructRouteData($route));
             }
@@ -145,7 +154,15 @@ class Router {
             foreach(static::$route_groups as $id => $route_group) {
                 static::buildRouteGroup($route_group, $r);
             }
-        });
+        };
+
+        if((bool)static::$cache) {
+            return FastRoute\cachedDispatcher($collection, [
+                'cacheFile' => static::$cache, /* required */
+            ]);
+        }
+
+        return FastRoute\simpleDispatcher($collection);
     }
 
     protected static function buildRouteGroup($route_group, FastRoute\RouteCollector $r) {
