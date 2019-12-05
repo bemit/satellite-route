@@ -12,11 +12,11 @@ class Router {
     /**
      * @var array $routes
      */
-    protected static $routes;
+    protected static $routes = [];
     /**
      * @var array $route_groups
      */
-    protected static $route_groups;
+    protected static $route_groups = [];
 
     /**
      * @var string|null
