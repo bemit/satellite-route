@@ -49,13 +49,13 @@ class Router {
     /**
      * @param $id
      * @param $method
-     * @param $route
+     * @param $path
      * @param callable $handler callable or DI resolvable
      *
      * @return self
      */
-    public static function addRoute(string $id, string $method, string $route, $handler) {
-        static::$routes[$id] = static::buildRouteData($method, $route, $handler);
+    public static function addRoute(string $id, string $method, string $path, $handler) {
+        static::$routes[$id] = static::buildRouteData($method, $path, $handler);
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return static::class;
