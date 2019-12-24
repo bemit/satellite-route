@@ -47,24 +47,28 @@ class Router {
     }
 
     /**
-     * @param $id
-     * @param $method
      * @param $path
+     * @param $method
      * @param callable $handler callable or DI resolvable
+     * @param string $id
      *
      * @return self
      */
-    public static function addRoute(string $id, string $method, string $path, $handler) {
-        static::$routes[$id] = static::buildRouteData($method, $path, $handler);
+    public static function addRoute(string $path, string $method, $handler, string $id = '') {
+        if($id === '') {
+            static::$routes[] = static::buildRouteData($method, $path, $handler);
+        } else {
+            static::$routes[$id] = static::buildRouteData($method, $path, $handler);
+        }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return static::class;
     }
 
-    protected static function buildRouteData($method, $route, $handler) {
+    protected static function buildRouteData($method, $path, $handler) {
         return [
             'method' => $method,
-            'route' => $route,
+            'path' => $path,
             'handler' => $handler,
         ];
     }
@@ -72,7 +76,7 @@ class Router {
     protected static function destructRouteData($route) {
         return [
             $route['method'],
-            $route['route'],
+            $route['path'],
             $route['handler'],
         ];
     }

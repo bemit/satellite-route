@@ -8,7 +8,7 @@ use Doctrine\Common\Annotations\Annotation;
  * @Annotation
  * @Target({"CLASS", "METHOD"})
  */
-final class Delete {
+class Delete {
     /**
      * @var string url path
      */
@@ -16,7 +16,7 @@ final class Delete {
     /**
      * @var string
      */
-    public $name;
+    public $name = '';
     /**
      * @var string autofilled from discovery when applied to a method
      */

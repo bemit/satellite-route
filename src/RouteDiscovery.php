@@ -20,19 +20,22 @@ class RouteDiscovery {
         }
 
         foreach($routes as $route) {
-            if(!isset($route['class'], $route['annotation'])) {
+            /**
+             * @var \Orbiter\AnnotationsUtil\AnnotationResult $route
+             */
+            if(!$route->getClass() || !$route->getAnnotation()) {
                 continue;
             }
             /**
-             * @var \Satellite\KernelRoute\Annotations\Route $annotation
+             * @var \Satellite\KernelRoute\Annotations\Route|\Satellite\KernelRoute\Annotations\Post|\Satellite\KernelRoute\Annotations\Get|\Satellite\KernelRoute\Annotations\Put|\Satellite\KernelRoute\Annotations\Delete $annotation
              */
-            $annotation = $route['annotation'];
-            if(isset($route['method'])) {
+            $annotation = $route->getAnnotation();
+            if($route->getMethod()) {
                 // If the annotation was targeted at an method, set the method as handler
-                $annotation->handler = $route['method'];
+                $annotation->handler = $route->getMethod();
             }
 
-            Router::addRoute($annotation->name, $annotation->method ?? 'GET', $annotation->path, [$route['class'], $annotation->handler]);
+            Router::addRoute($annotation->path, $annotation->method ?? 'GET', [$route->getClass(), $annotation->handler], $annotation->name);
         }
 
         return $exec;

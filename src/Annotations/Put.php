@@ -8,7 +8,7 @@ use Doctrine\Common\Annotations\Annotation;
  * @Annotation
  * @Target({"CLASS", "METHOD"})
  */
-final class Put {
+class Put {
     /**
      * @var string url path
      */
@@ -16,7 +16,7 @@ final class Put {
     /**
      * @var string
      */
-    public $name;
+    public $name = '';
     /**
      * @var string autofilled from discovery when applied to a method
      */
