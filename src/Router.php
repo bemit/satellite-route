@@ -3,47 +3,24 @@
 namespace Satellite\KernelRoute;
 
 use FastRoute;
-use Satellite\Event;
-use Satellite\SystemLaunchEvent;
-use Nyholm\Psr7\Factory\Psr17Factory;
-use Nyholm\Psr7Server\ServerRequestCreator;
 
 class Router {
     /**
      * @var array $routes
      */
-    protected static $routes = [];
+    protected array $routes = [];
     /**
      * @var array $route_groups
      */
-    protected static $route_groups = [];
+    protected array $route_groups = [];
 
     /**
      * @var string|null
      */
-    protected static $cache;
+    protected ?string $cache;
 
-    /**
-     * @param \Satellite\SystemLaunchEvent $exec
-     *
-     * @return \Satellite\SystemLaunchEvent
-     */
-    public static function handle(SystemLaunchEvent $exec) {
-        if($exec->cli) {
-            return $exec;
-        }
-
-        $response = new RouteEvent();
-        $response->router = new \Middlewares\FastRoute(static::buildRouter());
-        $response->request = static::createContext();
-
-        Event::dispatch($response);
-
-        return $exec;
-    }
-
-    public static function setCache($cache) {
-        static::$cache = $cache;
+    public function __construct(?string $cache) {
+        $this->cache = $cache;
     }
 
     /**
@@ -54,18 +31,17 @@ class Router {
      *
      * @return self
      */
-    public static function addRoute(string $path, string $method, $handler, string $id = '') {
+    public function addRoute(string $path, string $method, $handler, string $id = '') {
         if($id === '') {
-            static::$routes[] = static::buildRouteData($method, $path, $handler);
+            $this->routes[] = $this->buildRouteData($method, $path, $handler);
         } else {
-            static::$routes[$id] = static::buildRouteData($method, $path, $handler);
+            $this->routes[$id] = $this->buildRouteData($method, $path, $handler);
         }
 
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return static::class;
+        return $this;
     }
 
-    protected static function buildRouteData($method, $path, $handler) {
+    protected function buildRouteData($method, $path, $handler) {
         return [
             'method' => $method,
             'path' => $path,
@@ -73,7 +49,7 @@ class Router {
         ];
     }
 
-    protected static function destructRouteData($route) {
+    protected function destructRouteData($route) {
         return [
             $route['method'],
             $route['path'],
@@ -86,8 +62,8 @@ class Router {
      * @param string $prefix
      * @param array $routes
      */
-    public static function addGroup(string $id, string $prefix, array $routes) {
-        static::$route_groups[$id] = [
+    public function addGroup(string $id, string $prefix, array $routes) {
+        $this->route_groups[$id] = [
             'prefix' => $prefix,
             'routes' => $routes,
         ];
@@ -99,8 +75,8 @@ class Router {
      *
      * @return array
      */
-    public static function delete(string $route, $handler) {
-        return static::buildRouteData('DELETE', $route, $handler);
+    public function delete(string $route, $handler) {
+        return $this->buildRouteData('DELETE', $route, $handler);
     }
 
     /**
@@ -109,8 +85,8 @@ class Router {
      *
      * @return array
      */
-    public static function put(string $route, $handler) {
-        return static::buildRouteData('PUT', $route, $handler);
+    public function put(string $route, $handler) {
+        return $this->buildRouteData('PUT', $route, $handler);
     }
 
     /**
@@ -119,8 +95,8 @@ class Router {
      *
      * @return array
      */
-    public static function post(string $route, $handler) {
-        return static::buildRouteData('POST', $route, $handler);
+    public function post(string $route, $handler) {
+        return $this->buildRouteData('POST', $route, $handler);
     }
 
     /**
@@ -129,8 +105,8 @@ class Router {
      *
      * @return array
      */
-    public static function get(string $route, $handler) {
-        return static::buildRouteData('GET', $route, $handler);
+    public function get(string $route, $handler) {
+        return $this->buildRouteData('GET', $route, $handler);
     }
 
     /**
@@ -139,7 +115,7 @@ class Router {
      *
      * @return array
      */
-    public static function group(string $prefix, array $routes) {
+    public function group(string $prefix, array $routes) {
         return [
             'prefix' => $prefix,
             'routes' => $routes,
@@ -149,53 +125,37 @@ class Router {
     /**
      * @return \FastRoute\Dispatcher
      */
-    protected static function buildRouter() {
-        $collection = static function(FastRoute\RouteCollector $r) {
-            foreach(static::$routes as $id => $route) {
-                $r->addRoute(...static::destructRouteData($route));
+    public function buildRouter(): \FastRoute\Dispatcher {
+        $collection = function(FastRoute\RouteCollector $r) {
+            foreach($this->routes as $id => $route) {
+                $r->addRoute(...$this->destructRouteData($route));
             }
 
-            foreach(static::$route_groups as $id => $route_group) {
-                static::buildRouteGroup($route_group, $r);
+            foreach($this->route_groups as $id => $route_group) {
+                $this->buildRouteGroup($route_group, $r);
             }
         };
 
-        if((bool)static::$cache) {
+        if($this->cache) {
             return FastRoute\cachedDispatcher($collection, [
-                'cacheFile' => static::$cache, /* required */
+                'cacheFile' => $this->cache, /* required */
             ]);
         }
 
         return FastRoute\simpleDispatcher($collection);
     }
 
-    protected static function buildRouteGroup($route_group, FastRoute\RouteCollector $r) {
-        $r->addGroup($route_group['prefix'], static function(FastRoute\RouteCollector $re) use ($route_group) {
+    protected function buildRouteGroup($route_group, FastRoute\RouteCollector $r) {
+        $r->addGroup($route_group['prefix'], function(FastRoute\RouteCollector $re) use ($route_group) {
             foreach($route_group['routes'] as $id => $route) {
                 if(isset($route['method'])) {
                     // route
-                    $re->addRoute(...static::destructRouteData($route));
+                    $re->addRoute(...$this->destructRouteData($route));
                 } else if(isset($route['prefix'])) {
                     // group
-                    static::buildRouteGroup($route, $re);
+                    $this->buildRouteGroup($route, $re);
                 }
             }
         });
-    }
-
-    /**
-     * @return \Psr\Http\Message\ServerRequestInterface
-     */
-    protected static function createContext() {
-        $psr17Factory = new Psr17Factory();
-
-        $creator = new ServerRequestCreator(
-            $psr17Factory, // ServerRequestFactory
-            $psr17Factory, // UriFactory
-            $psr17Factory, // UploadedFileFactory
-            $psr17Factory  // StreamFactory
-        );
-
-        return $creator->fromGlobals();
     }
 }

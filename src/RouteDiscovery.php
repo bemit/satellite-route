@@ -2,21 +2,22 @@
 
 namespace Satellite\KernelRoute;
 
-use Satellite\SystemLaunchEvent;
+use Psr\Log\LoggerInterface;
 
 class RouteDiscovery {
+    public const CONTAINER_ID = 'routes';
+    protected Router $router;
 
-    public $container_id = 'routes';
+    public function __construct(Router $router) {
+        $this->router = $router;
+    }
 
-    public function registerAnnotations(SystemLaunchEvent $exec, \Psr\Container\ContainerInterface $container) {
+    public function registerAnnotations(\Psr\Container\ContainerInterface $container, LoggerInterface $logger) {
         // automatic registering of routes discovered by annotations
-        if($exec->cli) {
-            return $exec;
-        }
-
-        $routes = $container->get($this->container_id);
+        $routes = $container->get(self::CONTAINER_ID);
         if(!is_array($routes)) {
-            return $exec;
+            $logger->error(__CLASS__ . ' routes in container entry `' . self::CONTAINER_ID . '` must be array');
+            return;
         }
 
         foreach($routes as $route) {
@@ -35,9 +36,7 @@ class RouteDiscovery {
                 $annotation->handler = $route->getMethod();
             }
 
-            Router::addRoute($annotation->path, $annotation->method ?? 'GET', [$route->getClass(), $annotation->handler], $annotation->name);
+            $this->router->addRoute($annotation->path, $annotation->method ?? 'GET', [$route->getClass(), $annotation->handler], $annotation->name);
         }
-
-        return $exec;
     }
 }

@@ -18,9 +18,9 @@ class Get {
      */
     public $name = '';
     /**
-     * @var string autofilled from discovery when applied to a method
+     * @var string autofilled from discovery when applied to a method, defaults to `handle` for PSR `RequestHandlerInterface`
      */
-    public $handler;
+    public $handler = 'handle';
     /**
      * @var string one http method like GET, PUT, DELETE, or use special annotations
      */
