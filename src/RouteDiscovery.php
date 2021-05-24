@@ -2,7 +2,14 @@
 
 namespace Satellite\KernelRoute;
 
+use Orbiter\AnnotationsUtil\AnnotationResult;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Satellite\KernelRoute\Annotations\Delete;
+use Satellite\KernelRoute\Annotations\Get;
+use Satellite\KernelRoute\Annotations\Post;
+use Satellite\KernelRoute\Annotations\Put;
+use Satellite\KernelRoute\Annotations\Route;
 
 class RouteDiscovery {
     public const CONTAINER_ID = 'routes';
@@ -12,7 +19,7 @@ class RouteDiscovery {
         $this->router = $router;
     }
 
-    public function registerAnnotations(\Psr\Container\ContainerInterface $container, LoggerInterface $logger) {
+    public function registerAnnotations(ContainerInterface $container, LoggerInterface $logger): void {
         // automatic registering of routes discovered by annotations
         $routes = $container->get(self::CONTAINER_ID);
         if(!is_array($routes)) {
@@ -22,13 +29,13 @@ class RouteDiscovery {
 
         foreach($routes as $route) {
             /**
-             * @var \Orbiter\AnnotationsUtil\AnnotationResult $route
+             * @var AnnotationResult $route
              */
             if(!$route->getClass() || !$route->getAnnotation()) {
                 continue;
             }
             /**
-             * @var \Satellite\KernelRoute\Annotations\Route|\Satellite\KernelRoute\Annotations\Post|\Satellite\KernelRoute\Annotations\Get|\Satellite\KernelRoute\Annotations\Put|\Satellite\KernelRoute\Annotations\Delete $annotation
+             * @var Route|Post|Get|Put|Delete $annotation
              */
             $annotation = $route->getAnnotation();
             if($route->getMethod()) {

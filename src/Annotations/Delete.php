@@ -12,17 +12,17 @@ class Delete {
     /**
      * @var string url path
      */
-    public $path;
+    public string $path;
     /**
      * @var string
      */
-    public $name = '';
+    public string $name = '';
     /**
      * @var string autofilled from discovery when applied to a method, defaults to `handle` for PSR `RequestHandlerInterface`
      */
-    public $handler = 'handle';
+    public string $handler = 'handle';
     /**
      * @var string one http method like GET, PUT, DELETE, or use special annotations
      */
-    public $method = 'DELETE';
+    public string $method = 'DELETE';
 }

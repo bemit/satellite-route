@@ -3,6 +3,7 @@
 namespace Satellite\KernelRoute;
 
 use FastRoute;
+use FastRoute\Dispatcher;
 
 class Router {
     /**
@@ -19,14 +20,14 @@ class Router {
      */
     protected ?string $cache;
 
-    public function __construct(?string $cache) {
+    public function __construct(?string $cache = null) {
         $this->cache = $cache;
     }
 
     /**
      * @param $path
      * @param $method
-     * @param callable $handler callable or DI resolvable
+     * @param callable|array $handler callable or DI resolvable
      * @param string $id
      *
      * @return self
@@ -71,7 +72,7 @@ class Router {
 
     /**
      * @param string $route
-     * @param callable $handler callable or DI resolvable
+     * @param callable|array $handler callable or DI resolvable
      *
      * @return array
      */
@@ -81,7 +82,7 @@ class Router {
 
     /**
      * @param string $route
-     * @param callable $handler callable or DI resolvable
+     * @param callable|array $handler callable or DI resolvable
      *
      * @return array
      */
@@ -91,7 +92,7 @@ class Router {
 
     /**
      * @param string $route
-     * @param callable $handler callable or DI resolvable
+     * @param callable|array $handler callable or DI resolvable
      *
      * @return array
      */
@@ -101,7 +102,7 @@ class Router {
 
     /**
      * @param string $route
-     * @param callable $handler callable or DI resolvable
+     * @param callable|array $handler callable or DI resolvable
      *
      * @return array
      */
@@ -115,7 +116,7 @@ class Router {
      *
      * @return array
      */
-    public function group(string $prefix, array $routes) {
+    public function group(string $prefix, array $routes): array {
         return [
             'prefix' => $prefix,
             'routes' => $routes,
@@ -123,9 +124,9 @@ class Router {
     }
 
     /**
-     * @return \FastRoute\Dispatcher
+     * @return Dispatcher
      */
-    public function buildRouter(): \FastRoute\Dispatcher {
+    public function buildRouter(): Dispatcher {
         $collection = function(FastRoute\RouteCollector $r) {
             foreach($this->routes as $id => $route) {
                 $r->addRoute(...$this->destructRouteData($route));
