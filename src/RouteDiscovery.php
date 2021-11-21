@@ -7,6 +7,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Satellite\KernelRoute\Annotations\Delete;
 use Satellite\KernelRoute\Annotations\Get;
+use Satellite\KernelRoute\Annotations\Patch;
 use Satellite\KernelRoute\Annotations\Post;
 use Satellite\KernelRoute\Annotations\Put;
 use Satellite\KernelRoute\Annotations\Route;
@@ -35,7 +36,7 @@ class RouteDiscovery {
                 continue;
             }
             /**
-             * @var Route|Post|Get|Put|Delete $annotation
+             * @var Route|Post|Get|Put|Delete|Patch $annotation
              */
             $annotation = $route->getAnnotation();
             if($route->getMethod()) {

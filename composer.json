@@ -2,7 +2,7 @@
     "name": "orbiter/satellite-route",
     "license": "MIT",
     "homepage": "https://bemit.codes",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "description": "",
     "require": {
         "php": ">=7.4||>=8.0",
