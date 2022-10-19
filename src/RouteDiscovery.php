@@ -3,8 +3,6 @@
 namespace Satellite\KernelRoute;
 
 use Orbiter\AnnotationsUtil\AnnotationResult;
-use Psr\Container\ContainerInterface;
-use Psr\Log\LoggerInterface;
 use Satellite\KernelRoute\Annotations\Delete;
 use Satellite\KernelRoute\Annotations\Get;
 use Satellite\KernelRoute\Annotations\Patch;
@@ -13,21 +11,17 @@ use Satellite\KernelRoute\Annotations\Put;
 use Satellite\KernelRoute\Annotations\Route;
 
 class RouteDiscovery {
-    public const CONTAINER_ID = 'routes';
     protected Router $router;
 
     public function __construct(Router $router) {
         $this->router = $router;
     }
 
-    public function registerAnnotations(ContainerInterface $container, LoggerInterface $logger): void {
-        // automatic registering of routes discovered by annotations
-        $routes = $container->get(self::CONTAINER_ID);
-        if(!is_array($routes)) {
-            $logger->error(__CLASS__ . ' routes in container entry `' . self::CONTAINER_ID . '` must be array');
-            return;
-        }
-
+    /**
+     * @param \Orbiter\AnnotationsUtil\AnnotationResult[] $routes
+     * @return void
+     */
+    public function registerAnnotations(array $routes): void {
         foreach($routes as $route) {
             /**
              * @var AnnotationResult $route

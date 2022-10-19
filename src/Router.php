@@ -25,37 +25,21 @@ class Router {
     }
 
     /**
-     * @param $path
-     * @param $method
+     * @param string $path
+     * @param string $method
      * @param callable|array $handler callable or DI resolvable
      * @param string $id
      *
      * @return self
      */
-    public function addRoute(string $path, string $method, $handler, string $id = '') {
+    public function addRoute(string $path, string $method, callable|array $handler, string $id = ''): static {
         if($id === '') {
-            $this->routes[] = $this->buildRouteData($method, $path, $handler);
+            $this->routes[] = [$method, $path, $handler];
         } else {
-            $this->routes[$id] = $this->buildRouteData($method, $path, $handler);
+            $this->routes[$id] = [$method, $path, $handler];
         }
 
         return $this;
-    }
-
-    protected function buildRouteData($method, $path, $handler) {
-        return [
-            'method' => $method,
-            'path' => $path,
-            'handler' => $handler,
-        ];
-    }
-
-    protected function destructRouteData($route) {
-        return [
-            $route['method'],
-            $route['path'],
-            $route['handler'],
-        ];
     }
 
     /**
@@ -63,51 +47,11 @@ class Router {
      * @param string $prefix
      * @param array $routes
      */
-    public function addGroup(string $id, string $prefix, array $routes) {
+    public function addGroup(string $id, string $prefix, array $routes): void {
         $this->route_groups[$id] = [
             'prefix' => $prefix,
             'routes' => $routes,
         ];
-    }
-
-    /**
-     * @param string $route
-     * @param callable|array $handler callable or DI resolvable
-     *
-     * @return array
-     */
-    public function delete(string $route, $handler) {
-        return $this->buildRouteData('DELETE', $route, $handler);
-    }
-
-    /**
-     * @param string $route
-     * @param callable|array $handler callable or DI resolvable
-     *
-     * @return array
-     */
-    public function put(string $route, $handler) {
-        return $this->buildRouteData('PUT', $route, $handler);
-    }
-
-    /**
-     * @param string $route
-     * @param callable|array $handler callable or DI resolvable
-     *
-     * @return array
-     */
-    public function post(string $route, $handler) {
-        return $this->buildRouteData('POST', $route, $handler);
-    }
-
-    /**
-     * @param string $route
-     * @param callable|array $handler callable or DI resolvable
-     *
-     * @return array
-     */
-    public function get(string $route, $handler) {
-        return $this->buildRouteData('GET', $route, $handler);
     }
 
     /**
@@ -129,7 +73,7 @@ class Router {
     public function buildRouter(): Dispatcher {
         $collection = function(FastRoute\RouteCollector $r) {
             foreach($this->routes as $id => $route) {
-                $r->addRoute(...$this->destructRouteData($route));
+                $r->addRoute(...$route);
             }
 
             foreach($this->route_groups as $id => $route_group) {
@@ -146,12 +90,12 @@ class Router {
         return FastRoute\simpleDispatcher($collection);
     }
 
-    protected function buildRouteGroup($route_group, FastRoute\RouteCollector $r) {
+    protected function buildRouteGroup($route_group, FastRoute\RouteCollector $r): void {
         $r->addGroup($route_group['prefix'], function(FastRoute\RouteCollector $re) use ($route_group) {
             foreach($route_group['routes'] as $id => $route) {
                 if(isset($route['method'])) {
                     // route
-                    $re->addRoute(...$this->destructRouteData($route));
+                    $re->addRoute(...$route);
                 } else if(isset($route['prefix'])) {
                     // group
                     $this->buildRouteGroup($route, $re);
